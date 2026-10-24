@@ -1,44 +1,52 @@
-# HackerRank Orchestrate - October 2026
+# HackerRank Orchestrate — Ghost Data Still Exists
 
-## Ghost Data Still Exists
+This repository contains a deterministic Python deletion-audit pipeline. It resolves current and historical identities, parses participant-facing evidence, applies `deletion_rules.csv`, and writes the required root-level `output.csv`.
 
-Build an AI agent that audits whether a user's personal data was actually deleted.
+Read [`problem_statement.md`](./problem_statement.md) for the full contract.
 
-A deletion workflow may report **Complete** while data still exists in databases, logs, support attachments, exports, search indexes, archives, or backups. Sync and restore processes may also bring deleted data back.
+## Setup
 
-For each request, the agent must first determine whether deletion was actually requested. It then returns `COMPLETE`, `INCOMPLETE`, or `NOT_APPLICABLE`, reports any remaining data or recreation risk, and produces the ordered remediation and verification steps required to finish an authorized deletion safely.
+Requirements: Python 3.10+ and SQLite support (included with Python). PDF/image optional tools are used when available: `pdftotext` and `tesseract`. No third-party package installation is required for the standard run.
 
-Read [`problem_statement.md`](./problem_statement.md) for the complete challenge contract.
-
----
-
-## Quick Start
-
-Clone the repository and move into the project directory:
+Run commands from the repository root. No environment variables are required. There are no secret values or API credentials in the default pipeline; the optional LLM/vision hooks are not invoked by the final run.
 
 ```bash
-git clone https://github.com/interviewstreet/hackerrank-orchestrate-october26.git
-cd hackerrank-orchestrate-october26
+python3 --version
 ```
 
-Start your AI coding tool from the **repository root** so it automatically reads [`AGENTS.md`](./AGENTS.md) and logs your session turns to `log.txt` in the root directory.
+On Windows, use `python` if `python3` is not registered.
 
-Build your solution in `code/main.py`, or use another language and document its setup and run command clearly in your README.
+## Run
 
-Your solution must:
-
-- Read the input files from `dataset/`
-- Generate one prediction row for every request in `dataset/deletion_requests.csv`
-- Write the final predictions to `output.csv` in the repository root
-
-Run the starter Python entry point with:
+Generate all 518 predictions:
 
 ```bash
 python3 code/main.py
 ```
 
-The blank template at `dataset/output.csv` is provided as a reference. Your final generated file for submission must be the root-level `output.csv`.
+This writes `output.csv` at the repository root with header `case_id,deletion_status,steps_json`.
 
+Validate the generated submission:
+
+```bash
+python3 code/validate.py
+```
+
+## Evaluation
+
+Score the public 32-case sample and print a diff for every failed case:
+
+```bash
+python3 code/evaluation/main.py
+```
+
+Run the three synthetic, no-real-PII cases:
+
+```bash
+python3 code/evaluation/custom_cases/custom_eval.py
+```
+
+Reports are in [`code/evaluation/evaluation_report.md`](./code/evaluation/evaluation_report.md) and [`code/evaluation/usage_report.md`](./code/evaluation/usage_report.md). The public sample change history is in `code/evaluation/CHANGELOG.md`.
 
 ## Dataset
 

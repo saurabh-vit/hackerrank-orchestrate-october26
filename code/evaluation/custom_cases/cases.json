@@ -1,0 +1,28 @@
+[
+  {
+    "case_id": "synthetic_old_email_chain",
+    "request_email": "  OLD.ALPHA@EXAMPLE.INVALID ",
+    "current_identity": {"user_id": "synthetic_user_alpha", "email": "new.alpha@example.invalid"},
+    "audit_chain": [{"old_value": "old.alpha@example.invalid", "new_value": "new.alpha@example.invalid", "field_name": "email", "audit_id": "synthetic_audit_001"}],
+    "request_text": "Please delete my account and all personal data.",
+    "expected": {"user_id": "synthetic_user_alpha", "status": "INCOMPLETE"}
+  },
+  {
+    "case_id": "synthetic_failover_drift",
+    "request_email": "beta@example.invalid",
+    "current_identity": {"user_id": "synthetic_user_beta", "email": "beta@example.invalid"},
+    "audit_chain": [],
+    "primary": {"system_id": "account_service", "resource_id": "account_beta", "state": "ABSENT"},
+    "failover": {"system_id": "account_service", "resource_id": "account_beta", "state": "PRESENT"},
+    "request_text": "Erase my account and personal information.",
+    "expected": {"user_id": "synthetic_user_beta", "status": "INCOMPLETE"}
+  },
+  {
+    "case_id": "synthetic_non_deletion",
+    "request_email": "gamma@example.invalid",
+    "current_identity": {"user_id": "synthetic_user_gamma", "email": "gamma@example.invalid"},
+    "audit_chain": [],
+    "request_text": "Please send me a copy of my data; do not delete anything.",
+    "expected": {"user_id": "synthetic_user_gamma", "status": "NOT_APPLICABLE"}
+  }
+]
