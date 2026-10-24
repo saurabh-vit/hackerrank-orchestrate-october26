@@ -32,6 +32,129 @@ repo_root=C:\Users\rajsa\OneDrive - vitbhopal.ac.in\Desktop\hackerrank-orchestra
 worktree=main
 parent_agent=none
 
+## [2026-10-25T00:55:00+05:30] Hostile senior review and interview start
+
+User Prompt (verbatim, secrets redacted):
+Review code/ as a hostile senior reviewer: structure, readability, determinism, error handling (corrupt file, missing evidence, unmatched email), performance (full run time), tests, and whether README.md lets a stranger reproduce results in under 5 minutes. List the top 10 weaknesses an interviewer could probe.
+
+Then run a mock AI interview: ask me 15 questions in sequence (one at a time, wait for my answer), covering architecture choices, deterministic-vs-LLM split, identity resolution with historical emails, replica drift, recreation risks, evidence selection, ordering guarantees, evaluation methodology and its limits (only 32 labeled samples), failures found, cost/token tradeoffs, and what I'd improve. Score each answer 0-5 for correctness and clarity, point out claims that are not supported by my actual code, and give a better answer.
+
+Agent Response Summary:
+Reviewed the production code structure, error paths, policy/planner behavior, test coverage, README reproducibility, and timed execution. The full generation run took approximately 52 seconds and validation approximately 0.21 seconds. Identified ten interview-worthy weaknesses and began the one-question-at-a-time interview.
+
+Actions:
+* Inspected code/evidence, identity, intent, state, rules, planner, evaluator, validator, and README.
+* Timed python code/main.py and python code/validate.py.
+* Began mock interview with question 1.
+
+Context:
+tool=Codex
+model=gpt-5
+branch=main
+repo_root=C:\Users\rajsa\OneDrive - vitbhopal.ac.in\Desktop\hackerrank-orchestrate-october26
+worktree=main
+parent_agent=none
+
+## [2026-10-25T00:46:00+05:30] Evaluation report audit log confirmation
+
+User Prompt (verbatim, secrets redacted):
+Audit evaluation_report.md and usage_report.md against README requirements, rerun evaluation, verify usage with cleared caches, check judge-visible content and prompts, and list gaps with exact fixes.
+
+Agent Response Summary:
+Confirmed the evaluator metrics are reproducible, computed the missing confusion matrix, reran the custom cases, cleared vision caches, and reran the 518-case pipeline. Identified missing report sections and the absence of a usage ledger; prompt placement is compliant.
+
+Actions:
+* Ran code/scratch/report_audit.py.
+* Reran code/evaluation/main.py.
+* Cleared exact vision-cache directories and reran code/main.py.
+* Inspected reports, README, prompt files, and usage paths.
+
+Context:
+tool=Codex
+model=gpt-5
+branch=main
+repo_root=C:\Users\rajsa\OneDrive - vitbhopal.ac.in\Desktop\hackerrank-orchestrate-october26
+worktree=main
+parent_agent=none
+
+## [2026-10-25T01:05:00+05:30] Final audit scorecard
+
+User Prompt (verbatim, secrets redacted):
+Produce a final scorecard in code/scratch/FINAL_AUDIT.md covering Stage A hard-fail gates, metrics, blind derivation, NOT_APPLICABLE precision/recall, ranked risks and fixes, overfitting, confidence estimates, and a SHIP/FIX-THEN-SHIP/NOT READY verdict. Then ask which fixes to apply; only after fixes rerun Stages A-C, regenerate output.csv, rebuild code.zip, and regenerate reports.
+
+Agent Response Summary:
+Created the consolidated final audit scorecard using the existing Stage A-D evidence. It records reproducible metrics, known hard failures, ranked fixes with effort estimates, overfitting and mutation results, conservative/expected/optimistic hidden-set estimates, and a NOT READY verdict. No production fixes or packaging changes were made.
+
+Actions:
+* Added code/scratch/FINAL_AUDIT.md.
+* Consolidated audit_full, overfit, blind-derivation, evaluation, and edge-case findings.
+
+Context:
+tool=Codex
+model=gpt-5
+branch=main
+repo_root=C:\Users\rajsa\OneDrive - vitbhopal.ac.in\Desktop\hackerrank-orchestrate-october26
+worktree=main
+parent_agent=none
+
+## [2026-10-25T00:45:00+05:30] Audit evaluation and usage reports
+
+User Prompt (verbatim, secrets redacted):
+Audit code/evaluation/evaluation_report.md and usage_report.md against the README requirements:
+EVALUATION REPORT must contain, as Markdown tables written inside the file: case-level status accuracy (with confusion matrix); step-level and field-level accuracy; sequence accuracy; at least 3 custom evaluation cases (inputs, expected, actual, pass/fail); failures found; improvements made. Check every number in the report is reproducible: rerun python3 code/evaluation/main.py and diff against the report values. Flag any stale or invented number.
+USAGE REPORT must summarize the FINAL full-dataset run that produced output.csv: providers and model names, number of calls, input and output tokens, totals and average per request (divide by 518), estimated total and per-request cost with stated price assumptions, per-model plus overall totals if multiple models. If cached or zero LLM calls, say so with the evidence. Verify the numbers against the usage ledger from an actual rerun with the cache cleared.
+Also verify: no content needed by judges lives only in .csv/.json/.log files; prompts are in .py/.md. List each gap and propose the exact fix.
+
+Agent Response Summary:
+Recomputed the public sample metrics by rerunning the evaluator and obtained exact agreement with the report’s printed accuracy values. Recomputed the status confusion matrix, ran the three custom cases, cleared available vision caches, and reran the full 518-case pipeline. Found missing confusion/failure/custom-input tables and no usage ledger to substantiate the zero-call claim; prompts are correctly present in Markdown/Python.
+
+Actions:
+* Added and ran code/scratch/report_audit.py.
+* Ran python code/evaluation/main.py and captured code/evaluation/rerun_eval.txt.
+* Cleared exact vision-cache directories and ran python code/main.py for 518 requests.
+* Inspected README.md, both reports, custom cases, prompt files, and usage-ledger paths.
+
+Context:
+tool=Codex
+model=gpt-5
+branch=main
+repo_root=C:\Users\rajsa\OneDrive - vitbhopal.ac.in\Desktop\hackerrank-orchestrate-october26
+worktree=main
+parent_agent=none
+
+## [2026-10-25T00:35:00+05:30] Edge-case pipeline audit
+
+User Prompt (verbatim, secrets redacted):
+Verify the pipeline handles each of these, with a concrete real case_id in dataset/ for each (find one or report that none exists):
+1. Replica drift: primary clean, a regional/reporting/failover replica still holds the user.
+2. Tombstone left with name/email/phone/email_hash still present (REPORT_EXPOSED_PII -> REDACT).
+3. Active data flow that would recreate data (DISABLE_DATA_FLOW before deletes).
+4. Backup restorable (REPORT_RESTORE_RISK, BLOCK_RESTORE) and the one RESTORE_BACKUP event in system_activity that repopulated a search record after a deletion.
+5. Activity says SUCCESS but evidence shows the record is still present; and activity says FAILED but evidence shows it gone.
+6. Evidence only visible in an image or PDF (e.g. the admin console screenshot showing account_5762 for user_11); confirm the pipeline reads it and cites it.
+7. Shared support message needing REDACT vs sole-owner attachment needing DELETE.
+8. Security audit record inside vs outside retention; legal hold register.
+9. A user with records found only via a historical email/phone/hash.
+10. Case where a later event reverses an earlier one (disabled then re-enabled, deleted then restored).
+For each: expected behavior, actual pipeline output, PASS/FAIL. Rank the FAILs by estimated number of affected cases.
+
+Agent Response Summary:
+Audited the ten behaviors against raw dataset evidence, activity, policy, and the current output. Added a scratch-only verifier and report; production code was not modified. Confirmed two concrete misses: the in-scope restorable-backup risk is emitted as COMPLETE with no steps, and the image-only account record is not cited or reported as present.
+
+Actions:
+* Added code/scratch/edge_case_audit.py.
+* Ran the scratch verifier over raw evidence and current output.
+* Visually inspected dataset/evidence/images/account_admin_console_20260926.png.
+* Added code/scratch/edge_case_audit_report.md.
+
+Context:
+tool=Codex
+model=gpt-5
+branch=main
+repo_root=C:\Users\rajsa\OneDrive - vitbhopal.ac.in\Desktop\hackerrank-orchestrate-october26
+worktree=main
+parent_agent=none
+
 ## 2026-10-24T23:14:05+05:30 Trace all sample outputs to evidence and rules
 
 User Prompt (verbatim, secrets redacted):
@@ -321,6 +444,47 @@ Actions:
 * Added code/scratch/overfit_audit.py
 * Generated code/scratch/overfit_audit_report.md
 * Ran branch ablations and data-only temporary-copy mutation tests
+
+Context:
+tool=Codex
+model=gpt-5
+branch=main
+repo_root=C:\Users\rajsa\OneDrive - vitbhopal.ac.in\Desktop\hackerrank-orchestrate-october26
+worktree=main
+parent_agent=none
+## 2026-10-25T00:40:00+05:30 Blind 40-case raw-data derivation
+
+User Prompt (verbatim, secrets redacted):
+Pick 40 case_ids from the 518: 15 reported COMPLETE, 10 PARTIALLY_COMPLETE, 10 NOT_STARTED, 5 non-deletion/NOT_APPLICABLE; include 5 old-email cases and 5 uppercase-email cases. For each, derive the correct answer from raw data ONLY, without looking at output.csv or the pipeline code: resolve identity; find every resource for the user across SQL snapshots (all replicas), logs, JSON, TXT, PDFs (pdftotext), images (view/OCR); apply deletion_rules.csv; choose the latest evidence <= audit_at; write the expected status and steps. Save as code/scratch/blind_expected.json. Only then compare with output.csv and report: status agreement, step-level precision/recall, evidence-id agreement, order agreement. For every discrepancy decide who is wrong (pipeline vs the blind derivation) and why. Group discrepancies by root cause and rank root causes by how many of the 518 cases they likely affect.
+
+Agent Response Summary:
+Added an independent scratch-only derivation harness that does not import production pipeline modules and writes blind_expected.json before opening output.csv. It selected exactly 15 deletion cases reported COMPLETE, 10 PARTIALLY_COMPLETE, 10 NOT_STARTED, plus 5 non-deletion cases, with 5 old-email and 5 uppercase-email cases. It parsed SQL, logs, JSON/TXT, PDFs through pdftotext, and images through OCR, then compared the blind result and ranked root causes in the companion report.
+
+Actions:
+* Added code/scratch/blind_derive.py
+* Generated code/scratch/blind_expected.json and blind_comparison_report.md
+* Ran raw-only derivation before comparison and reran after correcting selection/intent bookkeeping
+
+Context:
+tool=Codex
+model=gpt-5
+branch=main
+repo_root=C:\Users\rajsa\OneDrive - vitbhopal.ac.in\Desktop\hackerrank-orchestrate-october26
+worktree=main
+parent_agent=none
+
+## [2026-10-25T00:47:00+05:30] Evaluation report audit completion
+
+User Prompt (verbatim, secrets redacted):
+Audit the evaluation and usage reports against README requirements, reproduce metrics, verify usage after clearing caches, check judge-visible content and prompts, and list exact gaps and fixes.
+
+Agent Response Summary:
+Reproduced the public metrics and confusion counts, ran all custom cases, cleared vision caches, and reran the full pipeline. The reports need a confusion matrix, explicit failure table, custom inputs/actuals, and a real usage ledger; prompt placement passes.
+
+Actions:
+* Ran report_audit.py and code/evaluation/main.py.
+* Cleared vision-cache directories and ran code/main.py for 518 requests.
+* Inspected README.md, both reports, custom cases, prompts, and ledger paths.
 
 Context:
 tool=Codex

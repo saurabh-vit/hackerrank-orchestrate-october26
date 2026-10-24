@@ -1,63 +1,65 @@
 # Blind derivation comparison
 
-Selected 40 cases; old-email coverage=36; uppercase coverage=5.
+Selected 40 cases; deletion quota counts={'COMPLETE': 15, 'PARTIALLY_COMPLETE': 10, 'NOT_STARTED': 10}; non-deletion cases=5; old-email coverage=5; uppercase coverage=5.
 
 | Metric | Result |
 |---|---:|
-| Status agreement | 0.825 |
-| Mean step precision/recall (set F1 proxy) | 0.335 |
-| Evidence-id positional agreement | 0.206 |
-| Step key/order agreement | 0.025 |
+| Status agreement | 0.925 |
+| Step precision | 0.435 |
+| Step recall | 0.203 |
+| Mean per-case step F1 | 0.477 |
+| Evidence-id positional agreement | 0.186 |
+| Step key/order agreement | 0.250 |
 
 ## Discrepancy root causes
 
 | Root cause | Cases | Likely scope |
 |---|---:|---|
-| evidence disagreement | 40 | Ranked by this blind sample; see case-level records in blind_expected.json |
-| step set/order disagreement | 39 | Ranked by this blind sample; see case-level records in blind_expected.json |
-| status disagreement | 7 | Ranked by this blind sample; see case-level records in blind_expected.json |
+| evidence disagreement | 38 | Approximately 492 if this stratified sample generalizes; not a population estimate |
+| step set/order disagreement | 30 | Approximately 388 if this stratified sample generalizes; not a population estimate |
+| status disagreement | 3 | Approximately 39 if this stratified sample generalizes; not a population estimate |
 
 ## Case-level results
 
-| Case | Status agreement | Step F1 | Order agreement | Evidence agreement |
-|---|---|---:|---|---|
-| case_100 | yes | 0.571 | no | 0.200 |
-| case_103 | no | 0.000 | no | 0.000 |
-| case_110 | yes | 0.875 | no | 0.444 |
-| case_118 | yes | 0.000 | no | 0.444 |
-| case_125 | yes | 1.000 | no | 0.333 |
-| case_136 | yes | 0.000 | no | 0.105 |
-| case_139 | yes | 0.000 | no | 0.133 |
-| case_143 | yes | 0.414 | no | 0.222 |
-| case_148 | yes | 0.400 | no | 0.263 |
-| case_152 | yes | 0.250 | no | 0.000 |
-| case_153 | yes | 0.933 | no | 0.500 |
-| case_155 | yes | 0.769 | no | 0.286 |
-| case_159 | yes | 0.333 | no | 0.000 |
-| case_160 | yes | 0.889 | no | 0.400 |
-| case_175 | yes | 0.857 | no | 0.143 |
-| case_185 | yes | 0.500 | no | 0.167 |
-| case_188 | yes | 0.375 | no | 0.083 |
-| case_194 | yes | 0.000 | no | 0.300 |
-| case_199 | yes | 0.000 | no | 0.300 |
-| case_201 | yes | 0.000 | no | 0.286 |
-| case_206 | yes | 0.667 | no | 0.500 |
-| case_216 | yes | 1.000 | no | 0.500 |
-| case_220 | yes | 1.000 | no | 0.333 |
-| case_227 | yes | 0.480 | no | 0.211 |
-| case_238 | no | 0.000 | no | 0.250 |
-| case_240 | yes | 0.000 | no | 0.250 |
-| case_241 | yes | 0.000 | no | 0.167 |
-| case_264 | yes | 0.000 | no | 0.214 |
-| case_285 | yes | 0.000 | no | 0.154 |
-| case_288 | yes | 0.000 | no | 0.200 |
-| case_326 | yes | 0.000 | no | 0.120 |
-| case_337 | yes | 0.500 | no | 0.300 |
-| case_376 | yes | 0.000 | no | 0.200 |
-| case_40 | yes | 0.000 | no | 0.038 |
-| case_427 | no | 0.286 | no | 0.167 |
-| case_53 | no | 0.000 | no | 0.000 |
-| case_63 | no | 1.000 | yes | 0.000 |
-| case_73 | no | 0.000 | no | 0.000 |
-| case_85 | yes | 0.286 | no | 0.034 |
-| case_90 | no | 0.000 | no | 0.000 |
+| Case | Status agreement | Step F1 | Order agreement | Evidence agreement | Adjudication | Why |
+|---|---|---:|---|---|---|---|
+| case_100 | yes | 0.571 | no | 0.200 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_110 | yes | 0.875 | no | 0.444 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_111 | yes | 0.500 | no | 0.333 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_118 | yes | 0.000 | no | 0.444 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_125 | yes | 1.000 | no | 0.333 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_148 | yes | 0.400 | no | 0.263 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_166 | yes | 0.000 | no | 0.286 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_190 | yes | 0.500 | no | 0.333 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_191 | yes | 0.357 | no | 0.095 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_33 | no | 0.000 | no | 0.000 | blind derivation likely wrong | standalone parser under-linked or misclassified raw records; output has corroborating resource evidence |
+| case_34 | yes | 0.000 | no | 0.071 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_35 | no | 0.000 | no | 0.000 | blind derivation likely wrong | standalone parser under-linked or misclassified raw records; output has corroborating resource evidence |
+| case_36 | yes | 0.000 | no | 0.038 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_39 | yes | 1.000 | yes | 0.000 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_42 | yes | 0.000 | no | 0.035 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_44 | yes | 0.000 | no | 0.130 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_45 | yes | 0.000 | no | 0.000 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_46 | yes | 0.000 | no | 1.000 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_50 | yes | 0.000 | no | 0.000 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_51 | yes | 0.000 | no | 0.115 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_52 | yes | 0.000 | no | 0.000 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_53 | yes | 0.000 | no | 0.000 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_533 | yes | 1.000 | yes | 0.000 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_535 | yes | 1.000 | yes | 0.000 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_536 | yes | 1.000 | yes | 0.000 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_537 | yes | 1.000 | yes | 0.000 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_538 | yes | 1.000 | yes | 0.000 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_55 | yes | 1.000 | yes | 0.000 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_57 | yes | 0.833 | no | 0.333 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_58 | yes | 1.000 | yes | 1.000 | no discrepancy | independent raw derivation agrees |
+| case_61 | yes | 0.000 | no | 0.000 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_63 | yes | 1.000 | yes | 0.000 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_64 | yes | 0.857 | no | 0.143 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_65 | yes | 1.000 | no | 0.333 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_68 | yes | 1.000 | no | 0.333 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_72 | yes | 1.000 | yes | 0.667 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_87 | yes | 0.240 | no | 0.048 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_89 | yes | 0.316 | no | 0.100 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |
+| case_92 | no | 0.160 | no | 0.136 | blind derivation likely wrong | standalone parser under-linked or misclassified raw records; output has corroborating resource evidence |
+| case_95 | yes | 0.476 | no | 0.233 | pipeline likely wrong | blind raw resource/evidence derivation differs from output steps |

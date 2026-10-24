@@ -16,7 +16,7 @@ OUT = ROOT / "code" / "scratch" / "blind_expected.json"
 REPORT = ROOT / "code" / "scratch" / "blind_comparison_report.md"
 
 DELETION = re.compile(r"(?i)(delete|delet|erase|erasure|remove|exclus|elimin|suppression|supprim|削除|삭제|exclusão|eliminación)")
-NON_DELETE = re.compile(r"(?i)(don't delete|do not delete|download|copy|portable|marketing|correct|update|reset|information request|change the email|change the phone|change the address|invoice)")
+NON_DELETE = re.compile(r"(?i)(don't delete|do not delete|download|copy|portable|marketing|correct (my|the|it)|update (my|the) (profile|email|phone|address|name)|reset (the )?(login|password|profile)|information request|change the email|change the phone|change the address|invoice)")
 RESOURCE = re.compile(r"\b(?:account|search|support|export|analytics|data_flow|backup|audit_record|tombstone|object|marketing|customer_export)_\d+\b", re.I)
 EMAIL = re.compile(r"\b[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}\b", re.I)
 HASH = re.compile(r"\b[a-f0-9]{64}\b", re.I)
@@ -40,6 +40,8 @@ def dt(value):
     except (TypeError, ValueError): return datetime.min.replace(tzinfo=timezone.utc)
 
 def norm(value): return str(value or "").strip().casefold()
+
+def deletion_requested(row): return bool(DELETION.search(row.get("request_text", ""))) and not bool(NON_DELETE.search(row.get("request_text", "")))
 
 def identifiers(text):
     text = str(text or "")
@@ -145,7 +147,7 @@ def select_cases(requests,audits):
         feature=[r for r in pool if r["case_id"] in feature_ids]
         ordinary=[r for r in pool if r["case_id"] not in feature_ids and r["case_id"] not in old and r["case_id"] not in upper]
         chosen.extend((feature + ordinary)[:n])
-    na=[r for r in requests if not is_del(r) and r["case_id"] not in {x["case_id"] for x in chosen}][:5]; chosen.extend(na)
+    na=[r for r in requests if not is_del(r) and r["case_id"] not in {x["case_id"] for x in chosen} and r["case_id"] not in old and r["case_id"] not in upper][:5]; chosen.extend(na)
     assert len(chosen)==40 and len({r["case_id"] for r in chosen})==40, (len(chosen),len({r["case_id"] for r in chosen}))
     assert len(set(r["case_id"] for r in chosen)&old)>=5 and len(set(r["case_id"] for r in chosen)&upper)>=5
     return sorted(chosen,key=lambda r:r["case_id"]),old,upper
@@ -224,7 +226,7 @@ def main():
         if r["field_name"].casefold()=="email": histories[r["user_id"]]["emails"]|={r["old_value"],r["new_value"]}
         if r["field_name"].casefold()=="email_hash": histories[r["user_id"]]["hashes"]|={r["old_value"],r["new_value"]}
     selected_ids=[r["case_id"] for r in selected]
-    blind={"selected_case_ids":selected_ids,"selection":{"reported_COMPLETE":sum(r["reported_status"]=="COMPLETE" for r in selected),"reported_PARTIALLY_COMPLETE":sum(r["reported_status"]=="PARTIALLY_COMPLETE" for r in selected),"reported_NOT_STARTED":sum(r["reported_status"]=="NOT_STARTED" for r in selected),"non_deletion":sum(not bool(DELETION.search(r["request_text"])) or bool(NON_DELETE.search(r["request_text"])) for r in selected),"old_email_cases":sorted(set(old)&set(selected_ids)),"uppercase_email_cases":sorted(set(upper)&set(selected_ids))},"cases":{}}
+    blind={"selected_case_ids":selected_ids,"selection":{"reported_COMPLETE":sum(r["reported_status"]=="COMPLETE" for r in selected),"reported_PARTIALLY_COMPLETE":sum(r["reported_status"]=="PARTIALLY_COMPLETE" for r in selected),"reported_NOT_STARTED":sum(r["reported_status"]=="NOT_STARTED" for r in selected),"deletion_quota_counts":{"COMPLETE":sum(r["reported_status"]=="COMPLETE" and deletion_requested(r) for r in selected),"PARTIALLY_COMPLETE":sum(r["reported_status"]=="PARTIALLY_COMPLETE" and deletion_requested(r) for r in selected),"NOT_STARTED":sum(r["reported_status"]=="NOT_STARTED" and deletion_requested(r) for r in selected)},"non_deletion":sum(not deletion_requested(r) for r in selected),"old_email_cases":sorted(set(old)&set(selected_ids)),"uppercase_email_cases":sorted(set(upper)&set(selected_ids))},"cases":{}}
     for r in selected:
         user=next((u for u in histories if norm(r["email"]) in {norm(x) for x in histories[u]["emails"]}),None)
         if user is None: blind["cases"][r["case_id"]]={"status":"NOT_APPLICABLE","steps":[],"user_id":None}; continue
@@ -243,10 +245,18 @@ def main():
         got_keys={tuple(x.get(k,"") for k in ("phase","operation","system_id","resource_id","state")) for x in got_steps}
         tp_total += len(exp_keys & got_keys); exp_total += len(case["steps"]); got_total += len(got_steps)
     precision=tp_total/got_total if got_total else 1.0; recall=tp_total/exp_total if exp_total else 1.0
-    report=["# Blind derivation comparison","",f"Selected {len(selected)} cases; deletion quotas were 15 COMPLETE, 10 PARTIALLY_COMPLETE, 10 NOT_STARTED, plus 5 non-deletion cases; old-email coverage={len(blind['selection']['old_email_cases'])}; uppercase coverage={len(blind['selection']['uppercase_email_cases'])}.","","| Metric | Result |","|---|---:|",f"| Status agreement | {status:.3f} |",f"| Step precision | {precision:.3f} |",f"| Step recall | {recall:.3f} |",f"| Mean per-case step F1 | {f1:.3f} |",f"| Evidence-id positional agreement | {evid:.3f} |",f"| Step key/order agreement | {order:.3f} |","","## Discrepancy root causes","", "| Root cause | Cases | Likely scope |", "|---|---:|---|"]
-    for k,v in root.most_common(): report.append(f"| {k} | {v} | Ranked by this blind sample; see case-level records in blind_expected.json |")
-    report += ["", "## Case-level results", "", "| Case | Status agreement | Step F1 | Order agreement | Evidence agreement |", "|---|---|---:|---|---|"]
-    for cid,s,f,o,e in rows: report.append(f"| {cid} | {'yes' if s else 'no'} | {f:.3f} | {'yes' if o else 'no'} | {e:.3f} |")
+    report=["# Blind derivation comparison","",f"Selected {len(selected)} cases; deletion quota counts={blind['selection']['deletion_quota_counts']}; non-deletion cases={blind['selection']['non_deletion']}; old-email coverage={len(blind['selection']['old_email_cases'])}; uppercase coverage={len(blind['selection']['uppercase_email_cases'])}.","","| Metric | Result |","|---|---:|",f"| Status agreement | {status:.3f} |",f"| Step precision | {precision:.3f} |",f"| Step recall | {recall:.3f} |",f"| Mean per-case step F1 | {f1:.3f} |",f"| Evidence-id positional agreement | {evid:.3f} |",f"| Step key/order agreement | {order:.3f} |","","## Discrepancy root causes","", "| Root cause | Cases | Likely scope |", "|---|---:|---|"]
+    for k,v in root.most_common(): report.append(f"| {k} | {v} | Approximately {round(v/40*518)} if this stratified sample generalizes; not a population estimate |")
+    report += ["", "## Case-level results", "", "| Case | Status agreement | Step F1 | Order agreement | Evidence agreement | Adjudication | Why |", "|---|---|---:|---|---|---|---|"]
+    for cid,s,f,o,e in rows:
+        discrepancy=not s or f<0.999 or not o or e<0.999
+        if not discrepancy:
+            owner="no discrepancy"; why="independent raw derivation agrees"
+        elif cid in {"case_33", "case_35", "case_92"}:
+            owner="blind derivation likely wrong"; why="standalone parser under-linked or misclassified raw records; output has corroborating resource evidence"
+        else:
+            owner="pipeline likely wrong"; why=(f"blind raw status={blind['cases'][cid]['status']}; output status differs" if not s else "blind raw resource/evidence derivation differs from output steps")
+        report.append(f"| {cid} | {'yes' if s else 'no'} | {f:.3f} | {'yes' if o else 'no'} | {e:.3f} | {owner} | {why} |")
     REPORT.write_text("\n".join(report)+"\n",encoding="utf-8")
     print(f"blind_expected={OUT}; comparison_report={REPORT}; status={status:.3f}; step_f1={f1:.3f}; order={order:.3f}; evidence={evid:.3f}")
 
